@@ -23,7 +23,14 @@ class ClientUpdateView(UpdateView, ClientForm):
     form_class = ClientForm
 
     def get_success_url(self):
-        return reverse('mailings:clients')
+        return reverse('mailings:clients_list')
+
+
+class ClientDeleteView(DeleteView):
+    model = Client
+
+    def get_success_url(self):
+        return reverse('mailings:clients_list')
 
 
 class MailingSettingsDetailView(DetailView):

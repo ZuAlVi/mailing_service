@@ -1,6 +1,7 @@
 from django.contrib import admin
 
 from mailings.models import Client, MailingSettings, Message, Log
+from users.models import User
 
 
 @admin.register(Client)
@@ -29,3 +30,9 @@ class LogAdmin(admin.ModelAdmin):
     list_display = ('pk', 'mailing_list', 'attempt_time', 'status', 'server_response')
     list_filter = ('mailing_list', 'status')
     search_fields = ('mailing_list', 'attempt_time', 'status')
+
+
+@admin.register(User)
+class UserAdmin(admin.ModelAdmin):
+    list_display = ('email',)
+    list_filter = ('email', )

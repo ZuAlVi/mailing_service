@@ -40,5 +40,5 @@ def send_mailing(mailing):
                     log.save()
                 return log
     else:
-        mailing.status = MailingSettings.COMPLETED
+        mailing.status = MailingSettings.FINISHED
         mailing.save()

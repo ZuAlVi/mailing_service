@@ -18,19 +18,19 @@ class Client(models.Model):
 
 
 class MailingSettings(models.Model):
-    DAILY = 'Раз в день'
-    WEEKLY = 'Раз в неделю'
-    MONTHLY = 'Раз в месяц'
+    DAILY = 'D'
+    WEEKLY = 'W'
+    MONTHLY = 'M'
 
     PERIOD_CHOICES = [
-        (DAILY, 'Раз в день'),
-        (WEEKLY, 'Раз в неделю'),
-        (MONTHLY, 'Раз в месяц')
+        (DAILY, 'Ежедневная'),
+        (WEEKLY, 'Еженедельная'),
+        (MONTHLY, 'Ежемесячная')
     ]
 
-    CREATED = 'Создана'
-    STARTED = 'Запущена'
-    FINISHED = 'Завершена'
+    CREATED = 'C'
+    STARTED = 'S'
+    FINISHED = 'F'
 
     STATUS_CHOICES = [
         (CREATED, 'Создана'),
@@ -40,8 +40,9 @@ class MailingSettings(models.Model):
 
     start_time = models.DateTimeField(verbose_name='Время старта рассылки')
     end_time = models.DateTimeField(verbose_name='Время окончания рассылки')
-    period = models.CharField(max_length=15, verbose_name='Период рассылки', choices=PERIOD_CHOICES)
-    status = models.CharField(max_length=15, verbose_name='Статус рассылки', choices=STATUS_CHOICES, default=CREATED)
+    date = models.DateField(verbose_name='Дата следующей рассылки', **NULLABLE)
+    period = models.CharField(max_length=1, verbose_name='Период рассылки', choices=PERIOD_CHOICES)
+    status = models.CharField(max_length=1, verbose_name='Статус рассылки', choices=STATUS_CHOICES, default=CREATED)
 
     clients = models.ManyToManyField(Client, verbose_name='Клиенты рассылки')
 

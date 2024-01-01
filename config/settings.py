@@ -11,9 +11,12 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 """
 import os
 from pathlib import Path
+from dotenv import load_dotenv
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / '.env')
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
@@ -37,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'mailings',
+    'users',
     'django_apscheduler',
 ]
 
@@ -78,7 +82,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'mailings',
         'USER': 'postgres',
-        'PASSWORD': 'W321s123'
+        'PASSWORD': os.getenv('PG_PASS')
     }
 }
 
@@ -135,7 +139,7 @@ EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
 EMAIL_HOST_USER = 'mailings.app@yandex.ru'
-EMAIL_HOST_PASSWORD = 'rdfotpbxkbjibwpf'
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 SERVER_EMAIL = EMAIL_HOST_USER
@@ -143,3 +147,28 @@ EMAIL_ADMIN = EMAIL_HOST_USER
 
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 APSCHEDULER_RUN_NOW_TIMEOUT = 25
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'root': {
+        'handlers': ['console'],
+        'level': 'DEBUG',  # Используйте 'INFO' для вывода сообщений типа 'hello'
+    },
+}
+
+# В файле settings.py
+
+SCHEDULER_AUTOSTART = True
+SCHEDULER_TIMEZONE = 'Europe/Moscow'
+SCHEDULER_API_ENABLED = False
+
+
+AUTH_USER_MODEL = 'users.User'
+LOGOUT_REDIRECT_URL = '/'
+LOGIN_REDIRECT_URL = '/'
