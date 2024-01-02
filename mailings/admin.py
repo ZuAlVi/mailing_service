@@ -1,38 +1,34 @@
 from django.contrib import admin
 
-from mailings.models import Client, MailingSettings, Message, Log
+from mailings.models import Client, Mailing, Message, Logs
 from users.models import User
 
 
 @admin.register(Client)
 class ClientAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'fio', 'email')
-    list_filter = ('fio',)
-    search_fields = ('fio', 'email', 'comment')
-
-
-@admin.register(MailingSettings)
-class MailingSettingsAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'start_time', 'end_time', 'period', 'status')
-    list_filter = ('start_time', 'end_time', 'period', 'status')
-    search_fields = ('start_time', 'end_time')
+    list_display = ('full_name', 'email', 'comment',)
+    list_filter = ('full_name',)
+    search_fields = ('full_name', 'email', 'comment')
 
 
 @admin.register(Message)
 class MessageAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'title', 'mailing_list')
-    list_filter = ('mailing_list', )
-    search_fields = ('title', 'text')
+    list_display = ('title',)
 
 
-@admin.register(Log)
-class LogAdmin(admin.ModelAdmin):
-    list_display = ('pk', 'mailing_list', 'attempt_time', 'status', 'server_response')
-    list_filter = ('mailing_list', 'status')
-    search_fields = ('mailing_list', 'attempt_time', 'status')
+@admin.register(Mailing)
+class ClientAdmin(admin.ModelAdmin):
+    list_display = ('name', 'start_date', 'end_date', 'interval', 'status', 'owner')
+    list_filter = ('start_date', 'end_date', 'interval', 'status', 'owner')
+    search_fields = ('start_date', 'end_date')
+
+
+@admin.register(Logs)
+class LogsAdmin(admin.ModelAdmin):
+    list_display = ('mailing', 'last_mailing_time', 'status',)
 
 
 @admin.register(User)
 class UserAdmin(admin.ModelAdmin):
     list_display = ('email',)
-    list_filter = ('email', )
+    list_filter = ('email',)

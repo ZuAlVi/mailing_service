@@ -1,28 +1,52 @@
 from django.forms import ModelForm
+from django.forms import DateTimeInput
 
-from mailings.models import Client, MailingSettings, Message
+from mailings.models import Mailing, Message, Client
 
 
 class StyleFormMixin:
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        for fild_name, field in self.fields.items():
+        for field_name, field in self.fields.items():
             field.widget.attrs['class'] = 'form-control'
 
 
-class ClientForm(StyleFormMixin, ModelForm):
+class MailingForm(StyleFormMixin, ModelForm):
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request')
+        user = self.request.user
+        super().__init__(*args, **kwargs)
+        self.fields['mail_to'].queryset = Client.objects.filter(owner=user)
+        self.fields['message'].queryset = Message.objects.filter(owner=user)
+
     class Meta:
-        model = Client
-        fields = ('fio', 'email', 'comment')
+        model = Mailing
+        exclude = ('next_date', 'owner', 'is_activated',)
+
+        widgets = {
+            'start_date': DateTimeInput(attrs={'placeholder': 'ДД.ММ.ГГГГ ЧЧ:ММ:СС', 'type': 'datetime-local'}),
+            'end_date': DateTimeInput(attrs={'placeholder': 'ДД.ММ.ГГГГ ЧЧ:ММ:СС', 'type': 'datetime-local'}),
+        }
 
 
-class MailingSettingsForm(StyleFormMixin, ModelForm):
+class MailingModeratorForm(StyleFormMixin, ModelForm):
+
     class Meta:
-        model = MailingSettings
-        fields = ('start_time', 'end_time', 'period', 'status', 'clients')
+        model = Mailing
+        fields = ('is_activated',)
 
 
 class MessageForm(StyleFormMixin, ModelForm):
+
     class Meta:
         model = Message
-        fields = ('title', 'text')
+        exclude = ('owner',)
+
+
+class ClientForm(StyleFormMixin, ModelForm):
+
+    class Meta:
+        model = Client
+        exclude = ('owner',)
