@@ -1,70 +1,93 @@
 from django.conf import settings
-from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.views import LoginView, LogoutView
+from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.shortcuts import render, redirect
-from django.contrib.auth.views import LoginView as BaseLoginView
-from django.contrib.auth.views import LogoutView as BaseLogoutView
-from django.urls import reverse_lazy, reverse
-from django.views.generic import CreateView, View, UpdateView
+from django.urls import reverse
+from django.views.generic import CreateView, UpdateView, View
+from users.forms import RegisterForm, ModeratorForm
+from users.models import User
 from django.utils.crypto import get_random_string
 
-from users.forms import UserRegisterForm, UserForm
-from users.models import User
 
-
-class LoginView(BaseLoginView):
+class UserLoginView(LoginView):
     template_name = 'users/login.html'
 
 
-class LogoutView(BaseLogoutView):
+class UserLogoutView(LogoutView):
     pass
 
 
 class RegisterView(CreateView):
     model = User
-    form_class = UserRegisterForm
-    success_url = reverse_lazy('users:code')
+    form_class = RegisterForm
     template_name = 'users/register.html'
 
     def form_valid(self, form):
-        code = get_random_string(12)
-        new_user = form.save()
-        new_user.code = code
-        new_user.save()
+        self.object = form.save()
+        self.object.is_active = False
+        self.object.code = get_random_string(12)
+        self.object.save()
+        url = f'http://127.0.0.1:8000/users/email/verify/{self.object.code}'
+
         send_mail(
-            recipient_list=[new_user.email],
-            message=f'Для подтверждения email введите код {new_user.code}',
-            subject='Регистрация на сервисе',
-            from_email=settings.DEFAULT_FROM_EMAIL,
+            subject='Регистрация',
+            message=f'Для успешной регистрации перейдите по ссылке: {url}',
+            from_email=settings.EMAIL_HOST_USER,
+            recipient_list=[self.object.email],
+            fail_silently=False,
         )
-
-        client_group = Group.objects.get(name='Клиент')
-        client_group.user_set.add(new_user)
-
         return super().form_valid(form)
 
+    def get_success_url(self):
+        return reverse('users:verify_message')
 
-class CodeView(View):
+
+# class CodeView(View):
+#     model = User
+#     template_name = 'users/code.html'
+#
+#     def get(self, request):
+#         return render(request, self.template_name)
+#
+#     def post(self, request):
+#         code = request.POST.get('code')
+#         user = User.objects.filter(code=code).first()
+#
+#         if user is not None and user.code == code:
+#             user.is_active = True
+#             user.save()
+#             # return redirect(reverse('users:login'))
+#             return render(request, 'users:login')
+
+def verification(request, verify_code):
+    try:
+        user = User.objects.filter(code=verify_code).first()
+        user.is_active = True
+        user.save()
+        return redirect('users:success_verify')
+    except (AttributeError, ValidationError):
+        return redirect('users:invalid_verify')
+
+
+class UserUpdateView(PermissionRequiredMixin, UpdateView):
     model = User
-    template_name = 'users/code.html'
+    form_class = ModeratorForm
+    permission_required = 'set_is_active'
+    success_url = 'users:users_list'
 
-    def get(self, request):
-        return render(request, self.template_name)
-
-    def post(self, request):
-        code = request.POST.get('code')
-        user = User.objects.filter(code=code).first()
-
-        if user is not None and user.code == code:
-            user.is_active = True
-            user.save()
-            return redirect(reverse('users:login'))
+    def get_success_url(self):
+        return reverse('users:list_view')
 
 
-class UserUpdateView(UpdateView):
-    model = User
-    success_url = reverse_lazy('users:profile')
-    form_class = UserForm
-
-    def get_object(self, queryset=None):
-        return self.request.user
+@login_required
+@permission_required(['users.view_user', 'users.set_is_active'])
+def get_users_list(request):
+    users_list = User.objects.all()
+    context = {
+        'object_list': users_list,
+        'title': 'Список пользователей сервиса',
+    }
+    return render(request, 'users/users_list.html', context)

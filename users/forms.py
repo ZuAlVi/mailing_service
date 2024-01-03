@@ -5,16 +5,16 @@ from mailings.forms import StyleFormMixin
 from users.models import User
 
 
-class UserRegisterForm(StyleFormMixin, UserCreationForm):
+class RegisterForm(StyleFormMixin, UserCreationForm):
     class Meta:
         model = User
         fields = ('email', 'password1', 'password2')
 
 
-class UserForm(StyleFormMixin, UserChangeForm):
+class ModeratorForm(UserChangeForm):
     class Meta:
         model = User
-        fields = ('email', 'password', 'first_name', 'last_name', 'phone', 'country', 'avatar')
+        fields = ('is_active',)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

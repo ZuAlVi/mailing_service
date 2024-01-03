@@ -1,12 +1,13 @@
 from django.core.management import BaseCommand
 
 from users.models import User
+from django.conf import settings
 
 
 class Command(BaseCommand):
     def handle(self, *args, **options):
         user = User.objects.create(
-            email='admin@yandex.ru',
+            email=settings.EMAIL_SUPERUSER,
             first_name='Admin',
             last_name='Adminov',
             is_active=True,
@@ -14,5 +15,5 @@ class Command(BaseCommand):
             is_superuser=True,
         )
 
-        user.set_password('W321s123')
+        user.set_password(settings.PASS_SUPERUSER)
         user.save()
