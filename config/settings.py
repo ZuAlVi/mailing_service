@@ -146,7 +146,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.yandex.ru'
 EMAIL_PORT = 465
 EMAIL_USE_SSL = True
-EMAIL_HOST_USER = 'mailings.app@yandex.ru'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
@@ -167,6 +167,9 @@ CACHES = {
 SCHEDULER_AUTOSTART = True
 SCHEDULER_TIMEZONE = 'Europe/Moscow'
 SCHEDULER_API_ENABLED = False
+
+EMAIL_SUPERUSER = os.getenv('EMAIL_SUPERUSER')
+PASS_SUPERUSER = os.getenv('PASS_SUPERUSER')
 
 
 
